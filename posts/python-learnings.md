@@ -1,7 +1,7 @@
 ---
 title: 'Awesome new Python learnings'
 slug: 'python-learnings'
-summary: 'A  brief on all the awesome new stuff I am learning in the world of Python programming'
+summary: 'A brief on all the awesome new stuff I am learning in the world of Python programming'
 date: 'March 8, 2019'
 ---
 <p>Of late, I have been working on a few Open Source Python projects, thus I have been exposed to a lot of new syntax and coding styles that were once pretty alien to me, all my sureties about having been an awesome Pythonista have since come crashing down. While this might seem to be a really sad realization, I'd rather say it was a pleasent learning experience and more of a surprise than a rude shock.</p>
@@ -12,7 +12,7 @@ date: 'March 8, 2019'
 
 <p>I seriously don't know what to call these and I didn't know that they existed, yet here I am. So the thing is, I never worked with enormous numbers, I seriously am bad at dealing with big ints and the one time in my life where I did really big calculations, I used a lot of JS and the whole thing flopped, must have been just me or it was just bad timing.</p>
 
-<p>Anyways, I have learnt over the last few days that within Python you can seperated numbers that are large into the "place notation", i.e. similar to how you write million as 1,000,000 instead of 1000000. This can be done with the seperators being underscores "\_" defined in <a href="https://www.python.org/dev/peps/pep-0515/">PEP 515</a>.</p>
+<p>Anyways, I have learnt over the last few days that within Python you can seperated numbers that are large into the "place notation", i.e. similar to how you write million as 1,000,000 instead of 1000000. This can be done with the seperators being underscores "_" defined in <a href="https://www.python.org/dev/peps/pep-0515/">PEP 515</a>.</p>
 <div class="highlight">
 	<pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
 <code class="language-python" data-lang="python">

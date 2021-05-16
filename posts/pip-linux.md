@@ -1,7 +1,7 @@
 ---
 title: 'Installing pip on Linux'
 slug: 'pip-linux'
-summary: 'The right way, for I\'ve been doing it wrong the whole time...'
+summary: 'The right way, for I have been doing it wrong the whole time...'
 date: 'December 14, 2018'
 feature-image: /assets/installing-pip.png
 ---

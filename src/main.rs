@@ -51,13 +51,24 @@ fn main() -> Result<(), Error> {
 
     let mut json_file = File::create(current_dir.join("_posts.json"))?;
     writeln!(json_file, "{{\n\t\"posts\": [")?;
+    let (mut no, last) = (0, output.len()-1);
 
     for (details, render) in output {
-        let json = format!("{}\t\t\t\"body\": \"{}\",", details, render);
-        writeln!(json_file, "\t\t{{\n{}\n\t\t}},", json)?;
+        let json = format!(
+            "{}\t\t\t\"body\": \"{}\"",
+            details,
+            render.replace("\n", "\\n")
+        );
+        write!(json_file, "\t\t{{\n{}\n\t\t}}", json)?;
+        if no != last {
+            writeln!(json_file, ",")?;
+            no += 1;
+        } else {
+            writeln!(json_file, "")?;
+        }
     }
 
-    writeln!(json_file, "\t],\n}}")?;
+    writeln!(json_file, "\t]\n}}")?;
 
     Ok(())
 }
