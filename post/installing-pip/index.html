@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  <title>Installing pip on Linux - dev.log | de-sh speaks about code...
+  </title>
+  
+  <meta name="description" content="So, have you been in a situation where you are not any more new to python, building stuff is easy, but not quite up to your expectations&hellip;
+Then you end up discoverng the beautiful Python Package Index, and you just fall in love with how easy it is to install all kinds of packages, be it Django, Flask or even TensorFlow!">
+  <meta name="author" content="">
+  
+  <link href="/dev.log/css/font.css" rel="stylesheet">
+  <link href="/dev.log/css/atom-one-dark.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400i,700,700i" rel="stylesheet">
+  <link href="/dev.log/css/style.css" rel="stylesheet">
+  
+  <link rel="icon" href="/images/favicon.png">
+  
+  <meta name="generator" content="Hugo 0.55.3" />
+  
+  <link rel="alternate" type="application/atom+xml" href="/dev.log/index.xml" title="dev.log">
+  
+</head>
+
+<body class="single">
+  <header class="header">
+    
+    <p class="title"><a href="/dev.log/">dev.log</a></p>
+    
+  </header>
+  <main class="main">
+<div class="progress-bar" id="myBar"></div>
+<article class="post post-view">
+  <header class="post-header">
+    <h1 class="post-title">Installing pip on Linux</h1>
+    <em>The right way, for I&#39;ve been doing it wrong the whole time...</em>
+    <p class="post-meta">December 14, 2018</p>
+  </header>
+  <div class="post-content">
+
+<p><img src="../../images/installing-pip.png" alt="Installing pip on Ubuntu" /></p>
+
+<p>So, have you been in a situation where you are not any more new to python, building stuff is easy, but not quite up to your expectations&hellip;</p>
+
+<p>Then you end up discoverng the beautiful <a href="https://pypi.org">Python Package Index</a>, and you just fall in love with how easy it is to install all kinds of packages, be it Django, Flask or even TensorFlow! Well, that&rsquo;s exactly the situation I was in after 4 years of using python!</p>
+
+<p>I have installed pip and done many wonderful things with it&hellip; That is until I found out that I was doing it all wrong.</p>
+
+<p>Installing pip wiht <code>sudo apt install python3-pip</code> was, to say the least, easy. But as is with anything in <a href="http://t.me/BEARlySec">InfoSec</a> not the safe or the correct way, also not how I&rsquo;d prefer and adhere to now&hellip; I hope you don&rsquo;t make the same mistake, so I bring to you, this pretty short gist of what I have learnt from my experience with PIP, and python packages in general!</p>
+
+<h2 id="installing-pip">Installing pip</h2>
+
+<p>The way most of my friends install pip usually goes like this&hellip;</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo apt install python3-pip</code></pre></div>
+<p>Yes, they all use pip3 and that&rsquo;s what I do too&hellip; This tutorial considers the same version. Just grow up, python2.7 is almost dead!</p>
+
+<p>But why do that when there&rsquo;s a much simpler way to do the same?</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">wget https://bootstrap.pypa.io/get-pip.py 
+python3 get-pip.py --user</code></pre></div>
+<p>And yes, I used the <code>--user</code> flag because for most usecases, I am fed up of running pip in sudo. There&rsquo;s the off chance that a hacker might take my carelessness as a boon to run havoc on my machine. Believe me, even linux machines are not safe from the tyrany that is malware. What I do next is make sure that my computer notices that I have pip insatlled by adding it to the PATH environment variable.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">PATH<span style="color:#f92672">=</span>$HOME/.local/bin:$PATH</code></pre></div>
+<p>You can also add the line to your .bash(/zsh/fish)rc file so that the pip command works without your having to use <code>python -m pip -</code></p>
+
+<p><a href="https://www.reddit.com/r/Python/comments/aa7yn5/i_see_a_lot_of_people_installing_pip_in_an/">Comments</a></p>
+</div>
+  <footer class="post-footer">
+    
+  </footer>
+</article>
+</main>
+<footer class="footer">
+  <span>&copy; 2020 <a href="https://gohugo.io/" rel="noopener" target="_blank">Devdutt Shenoi</a>️</span>
+</footer>
+<script src="/dev.log//js/site.js"></script>
+</body>
+</html>

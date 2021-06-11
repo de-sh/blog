@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>A Summer of Code with TiKV - dev.log | de-sh speaks about code...
+    </title>
+
+    <meta name="description"
+        content="Introduction The Hydrus server and it&rsquo;s associated packages as of now are at a stage where they apply most of the Hydra draft documentation framework, but the suite still needs a lot of work to make it usable in the production environment.">
+    <meta name="author" content="">
+
+    <link href="/dev.log/css/font.css" rel="stylesheet">
+    <link href="/dev.log/css/atom-one-dark.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400i,700,700i" rel="stylesheet">
+    <link href="/dev.log/css/style.css" rel="stylesheet">
+
+    <link rel="icon" href="/images/favicon.png">
+
+    <meta name="generator" content="Hugo 0.55.3" />
+
+    <link rel="alternate" type="application/atom+xml" href="/dev.log/index.xml" title="dev.log">
+
+</head>
+
+<body class="single">
+    <header class="header">
+
+        <p class="title"><a href="/dev.log/">dev.log</a></p>
+
+    </header>
+    <main class="main">
+        <div class="progress-bar" id="myBar"></div>
+        <article class="post post-view">
+            <header class="post-header">
+                <h1 class="post-title">A Summer of Code with TiKV</h1>
+                <em>A summary of achievements made through the Google Summer of Code program with CNCF on the TiKV project</em>
+                <p class="post-meta">August 25, 2020</p>
+            </header>
+            <div class="post-content">
+
+                <p>The <a
+                        href="https://drive.google.com/file/d/1_noqqI6e2nhQ3FFz-290K0OgzB7soN7u/view?usp=sharing">project
+                        proposal</a> I had submitted aimed to take <a href="https://github.com/tikv/tikv">TiKV</a>
+                    closer to full cloud native support. A vague understanding of the project allowed me to put forward
+                    the idea of supporting cloud based data stores such as AWS S3 to the TiKV storage engine, i.e.
+                    rocksdb, by making use of the <a href="https://github.com/rockset/rocksdb-cloud">rocksdb-cloud</a>
+                    library. The ideas put forward by the team at TiKV also helped to better formulate a plan that has
+                    been worked on through various PRs to the sister projects that associate with the storage component
+                    of the Database. The main issue being worked on was initiated well before the GSoC project started
+                    and can be found at <a href="https://github.com/tikv/tikv/issues/6506">tikv/tikv#6506</a>.</p>
+                <p>during the community boding period, <a href="https://github.com/yiwu-arbug">Yi Wu(@yiwu-arbug)</a>
+                    ideated further on the project with <a href="https://github.com/little-wallace">Liu
+                        Wei(@little-wallace)</a>, who compiled a <a
+                        href="https://docs.google.com/document/d/1rEmexICjwWe02XHWOGqNBs6zA6QpFh11d-XBt5Pvp8M/edit?usp=sharing">document
+                        with details about the desired results from the project</a>, while I was making use of the time
+                    to go through the <a href="https://tikv.org/docs">documentation</a> and do compilations, tests,
+                    etc, getting familiarized with the code as well as resulting in a few PRs to fix write-ups at <a
+                        href="https://github.com/tikv/tikv/pull/6740">tikv#6740</a> and <a
+                        href="https://github.com/tikv/website/pull/161">tikv/website#161</a>.</p><p>I also started
+                    to maintain a <a href="https://github.com/users/de-sh/projects/1">GitHub project</a> to organise
+                    the work plans and provide direction to my GSoC work, you can find a <a
+                        href="https://github.com/users/de-sh/projects/1#card-40733594">list of memos(weekly
+                        reports)</a> that have been written by me to help document work done on a weekly basis as well
+                    as the sub-tasks and other achievements made over the stretch of the project timeline. In the
+                    meantime I had also updated details relating to the TiKV project on the <a
+                        href="http://l.cncf.io">CNCF landscape</a> by making a PR, <a
+                        href="https://github.com/cncf/landscape/pull/1677">cncf/landscape#1677</a></p><img
+                    src="https://raw.githubusercontent.com/de-sh/tikv/side/images/tikv_cloud_native_ebs.png"
+                    align="left" height="600" width="550" alt="Diagram describing my understanding of the overall
+                    task without details prior to phase 1">
+                <p><em>This is a diagram that concisely depicts my understanding of how the task was to achieve cloud
+                        nativity, how different it really was from the task can be depicted in another diagram</em></p>
+                <h3>Phase 1</h3><p>While working on the refined proposal mentioned earlier I ended up contributing
+                    <a href="https://github.com/tikv/tikv/pull/8066">tikv#8066</a>, which updated the rusoto crate and
+                    utilised a single interface for identity management, leading to clearing up a few lines of code. The
+                    merger of this PR provided me a boost, but an update from Liu alerted me to how off track I had been
+                    with respect to the proposal document. Considering Liu was busy and unable to provide the necessary
+                    guidance for me to get started in contributing to the project, it was decided that a better plan had
+                    to be put in place and thus Yi took back full charge of the project and drafted the issue <a
+                        href="https://github.com/tikv/rust-rocksdb/issues/514">tikv/rust-rocksdb#514</a> which we
+                    utilised most of June-July to work on.</p><p>There were a lot of firsts for me in this, including
+                    my first try at writing a <a
+                        href="https://github.com/tikv/rust-rocksdb/blob/master/librocksdb_sys/librocksdb_cloud_sys/CMakeLists.txt"><code>CMakeLists.txt</code></a>
+                    and creating a CPP-rust FFI interface, which essentially contributed to <a
+                        href="https://github.com/tikv/rust-rocksdb/pull/517">tikv/rust-rocksdb#517</a>. Through July
+                    the project started to catch pace as Yi helped me in figuring out how to solve issues and experiment
+                    with various methods of achieving the allotted tasks, there were a lot of new learnings from the
+                    project. The editions made to sister projects also include <a
+                        href="https://github.com/tikv/rocksdb/pull/181">tikv/rocksdb#181</a> which provides a solution
+                    to the problems in compiling changes added by rust-rocksdb#517. The changes related to the #517 also
+                    includes the creation of the <a
+                        href="https://github.com/tikv/rocksdb/pull/181"><code>6.4.cloud</code> branch in
+                        tikv/rocksdb</a>. Most of these PRs were merged at the end of July, closing phase 1 of the
+                    project.</p><h3>Phase 2</h3><p>The second stage started with Yi Wu opening <a
+                        href="https://github.com/tikv/tikv/issue/8367">tikv#8367</a> to provide checkpoints for adding
+                    the newly availed rust-rocksdb <code>cloud</code> feature to tikv. I have opened a PR <a
+                        href="https://github.com/tikv/tikv/pull/8383">tikv#8383</a> to solve the same and have
+                    achieved the task to a respectable point. This is where we found out that the code doesn't really
+                    build as we intended it to, issues largely with linking the cloud code with the AWS-CPP-SDK and to
+                    some extent the compilation of cloud features that merged with #517, solving which I have opened <a
+                        href="https://github.com/tikv/rust-rocksdb/pull/529">rust-rocksdb#529</a> and a <a
+                        href="https://github.com/tikv/rocksdb/pulls?q=is%3Apr+author%3Ade-sh+fix">few associated PRs
+                        in tikv/rocksdb</a>, but this will take a lot more work.</p><h3>Phase 3</h3><p>The final
+                    stage of the project had been initiated on the back of building in S3 as a storage engine for TiKV.
+                    The test phase as I'd like to refer to it is focused on providing documentation of the observable
+                    performance benchmarks for S3, achieved using the <a href="https://github.com/axboe/fio">fio
+                        tool</a>, one can find the related findings as follows:</p><ol><li><a
+                            href="https://gist.github.com/de-sh/92f1ca7d50675e07ea77d726b4764ec3">random-read
+                            performance with block_size equal to 4k, 8k, 16k, up to 1M.</a></li></ol><ol
+                    start="2"><li><a
+                            href="https://gist.github.com/de-sh/58cfa07773cbb23baf0f2e378545d2b0">sequential-write
+                            performance for block_size=1M , with number of concurrent jobs 1,2,4 and 8.</a></li></ol>
+                <h3>Pull Requests made to various TiKV repositories</h3><ol><li><a
+                            href="https://github.com/tikv/rust-rocksdb/pulls?q=is%3Apr+author%3Ade-sh">tikv/rust-rocksdb</a>
+                    </li></ol><ol start="2"><li><a
+                            href="https://github.com/tikv/tikv/pulls?q=is%3Apr+author%3Ade-sh">tikv/TiKV</a></li>
+                </ol><ol start="3"><li><a
+                            href="https://github.com/tikv/rocksdb/pulls?q=is%3Apr+author%3Ade-sh">tikv/rocksdb</a>
+                    </li></ol><h3>Plans from here on</h3><p>I plan to take the project to compilation as the
+                    hurdles we are currently facing don't seem to be insurmountable. But I also intend to get back to
+                    academics for now, I am currently a senior at college and as part of my final year project, I intend
+                    to work on the learning I have attained from this project and apply it in the multimedia field, hope
+                    to keep everyone updated on it in the coming days!</p><p>If you are interested in helping out with
+                    the project and taking it forward, please consider giving the <a
+                        href="https://github.com/users/de-sh/projects/1">GitHub Project</a> a look.</p>
+            </div>
+            <footer class="post-footer">
+
+            </footer>
+        </article>
+    </main>
+    <footer class="footer">
+        <span>&copy; 2020 <a href="https://gohugo.io/" rel="noopener" target="_blank">Devdutt Shenoi</a>️</span>
+    </footer>
+    <script src="/dev.log//js/site.js"></script>
+</body>
+
+</html>
