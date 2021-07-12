@@ -91,5 +91,5 @@ export DJANGO_SECRET_KEY<span style="color:#f92672">=</span><span style="color:#
 </blockquote>
 
 <p>
-	<a href="https://pipenv.readthedocs.io/en/latest/">Pipenv.org</a> • <a href="https://github.com/de-sh/dev.log/issues/1">Comments</a>
+	<a href="https://pipenv.readthedocs.io/en/latest/">Pipenv.org</a> • <a href="https://github.com/de-sh/blog/issues/1">Comments</a>
 </p>
