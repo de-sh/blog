@@ -9,8 +9,7 @@
     <title>Async with rust, a collection of learnings - dev.log | de-sh speaks about code...
     </title>
 
-    <meta name="description"
-        content="A collection of thoughts and links that I feel have had a disproportionate impact on my journey
+    <meta name="description" content="A collection of thoughts and links that I feel have had a disproportionate impact on my journey
         learning async-rust">
     <meta name="author" content="">
 
@@ -69,7 +68,7 @@
                     std.
                 </p>
                 <p>To give a brief, async-rust code looks like this:</p>
-                <pre><code class="language-rust">
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
 async fn hello() -> String {
     // Code that waits on some IO
 }
@@ -85,12 +84,12 @@ fn main() {
                     differ in that an async function starts with the keywords <code>async fn</code> unlike the normal
                     <code>fn</code>, here <code>async</code> is syntactic sugar that translates down as depicted below:
                 </p>
-                <pre><code class="language-rust">
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
 async fn hello() -> String {
     // Logic
 }
                 </code></pre>
-                <pre><code class="language-rust">
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
 fn hello() -> Future&lt;Output = String&gt; {
     // Logic
 }
@@ -104,11 +103,137 @@ fn hello() -> Future&lt;Output = String&gt; {
                         color is your function&quot;</a>, a well articulated read if I am to recommend one, in which
                     async functions and regular functions are called colored functions that allow one to call the other,
                     but not vice versa and how things evolved till it got here.</p>
-                <p>Another great feature of async
-                    code that I've come to use a lot is <code>select!</code>, an async construct that performs
-                    multiplexing of async tasks. It has been very helpful as far as writing concurrent, multi-threaded
-                    IO/Network heavy applications goes, a note to read about and understand this is one <a
-                        href="https://tokio.rs/tokio/tutorial/select">from the tokio tutorial</a>.</p>
+                <p>Multi-threaded apps allow you to better utilise the large number of threads that are now common in
+                    newer CPUs, writing these apps on the other hand is a tough ask. With rust and async though, things
+                    are significantly better. For one, you can spawn a thread with <a
+                        href="https://doc.rust-lang.org/std/thread/fn.spawn.html"><code>std::thread::spawn()</code></a>
+                    and have part of your application run on a dedicated thread. For example, a dedicated thread is a
+                    great way to handle Network and IO interfaces separately from the business logic of the app, an
+                    example of code written like this would be:</p>
+
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
+fn main() {
+    std::thread::spawn(|| {
+        // Code that is to be run on a separate thread</code></pre>
+                });
+                // Code to be run on the current(main) thread. e.g. loop {}
+                }
+                </code></pre>
+                <p>It is to be noted that there should be code that continues to run in the
+                    main thread for the code spawned into thread to interact with the terminal, else the app just
+                    returns. Thus the difference between the following two code blocks is pretty big:</p>
+
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
+fn main() {
+    std::thread::spawn(|| {
+        for i in 1..100 {
+            println!(&quot;{}&quot;, i);        
+        }
+    });
+}
+                </code></pre>
+                <p>The above code returns as soon as the thread is spawned and doesn't print
+                    to the terminal, whereas the following does print the numbers 1 through 99.</p>
+
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
+fn main() {
+    std::thread::spawn(|| {
+        for i in 1..100 {
+            println!(&quot;{}&quot;, i);    
+        }
+    });
+    
+    loop {}
+}
+                </code></pre>
+                <p>Similarly, if you are constrained by the number of threads you can
+                    spawn(depending on the OS), an intelligent way to handle this problem is with <a
+                        href="https://docs.rs/tokio/1.12.0/tokio/task/fn.spawn.html"><code>tokio::task::spawn()</code></a>
+                    which has similar syntax, but supports async program scopes that are handled by the runtime(in this
+                    case tokio) and can be scheduled to run on the same thread or a different one by using the concept
+                    of <strong>green-threads</strong>. Hence when you write the following with <code>task</code>s
+                    instead of <code>thread</code>s, the difference is pretty easy to determine. This in code looks
+                    something like:</p>
+
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
+#[tokio::main]
+async fn main() {
+    tokio::task::spawn(async {
+        // Code that is to be handled by a concurrent task
+    });
+    // Rest of main()
+}
+                </code></pre>
+                <p>Since tasks are cheaper than full blown threads due to the lesser number of
+                    system calls made, they are better for a lot of things and hence are more often used as far as my
+                    code goes.</p>
+                <p>A question that might have now made it's way into your mind right now would be:
+                    &quot;If I have multiple threads/tasks handling various facets of my apps operations, how do I
+                    ensure that they are working in tandem and not cause chaos?&quot;, fret not, the answer I most
+                    frequently relate with is the humble channel. Channels are shared memory regions that are shared
+                    between multiple threads, one type of channel is the multi-producer-single-consumer <a
+                        href="https://doc.rust-lang.org/std/sync/mpsc/fn.channel.html"><code>std::sync::mpsc::channel</code></a>
+                    which allows for multiple producer thread/tasks to send data into a single consumer thread/task. The
+                    above mentioned function returns a tuple of <code>(Sender&lt;T&gt;, Receiver&lt;T&gt;)</code> where
+                    the receiver can be passed on to the consumer operation and the sender to the producer operations.
+                    An example where these could be used is as such:</p>
+
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
+fn main() {
+    let (tx, rx) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        for i in 1..100 {
+            tx.send(i);
+        }
+    });
+    
+    while let Ok(i) = rx.recv() {
+        println!(&quot;{}&quot;, i);
+    }
+}
+                </code></pre>
+                <p>Another great feature of async code that I've come to use a lot is
+                    <code>select!</code>, an async construct that performs multiplexing of async tasks. It has been very
+                    helpful as far as writing concurrent, multi-threaded IO/Network heavy applications goes, a note to
+                    read about and understand this is <a href="https://tokio.rs/tokio/tutorial/select">from the tokio
+                        tutorial</a>. A great way to illustrate the use of <code>select!</code> is as follows:
+                </p>
+
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
+use tokio::{select, sync::mpsc, task};
+
+#[tokio::main]
+async fn main() {
+    // Two channels are necessary to communicate with the two tasks.
+    let (tx_a, mut rx_a) = mpsc::channel(100);
+    let (tx_b, mut rx_b) = mpsc::channel(100);
+    
+    task::spawn(async move {
+        for i in 1..50 {
+            tx_a.send(i).await;
+        }
+    });
+    
+    task::spawn(async move {
+        for i in 50..100 {
+            tx_b.send(i).await;
+        }
+    });
+    
+    loop {
+        select! {
+            Some(i) = rx_a.recv() =&gt; {
+                println!(&quot;{}&quot;, i);
+            }
+            
+            Some(i) = rx_b.recv() =&gt; {
+                println!(&quot;{}&quot;, i);
+            }
+        }
+    }
+}
+                </code></pre>
+
                 <p>There's a lot
                     more complex, but fun stuff that happens here, and a lot of this is abstracted away to make the
                     experience a breeze for beginners, but it's still well worth the time to delve into the guts of this

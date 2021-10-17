@@ -37,6 +37,102 @@ fn hello() -> Future<Output = String> {
 
 till the "future" returns, in which case the value is then printed to screen by `print!()`. There's a lot of thought that has gone into how async/await within runtimes is a lot better than callbacks that have to be handled manually(as was once the norm, *casually points to javascript's `.then()`*), a debate I am not going to expand upon. Here's take where this problem is presented in a classic blog called ["What color is your function"](https://journal.stuffwithstuff.com/2015/02/01/what-color-is-your-function/), a well articulated read if I am to recommend one, in which async functions and regular functions are called colored functions that allow one to call the other, but not vice versa and how things evolved till it got here.
 
-Another great feature of async code that I've come to use a lot is `select!`, an async construct that performs multiplexing of async tasks. It has been very helpful as far as writing concurrent, multi-threaded IO/Network heavy applications goes, a note to read about and understand this is one [from the tokio tutorial](https://tokio.rs/tokio/tutorial/select).
+Multi-threaded apps allow you to better utilise the large number of threads that are now common in newer CPUs, writing these apps on the other hand is a tough ask. With rust and async though, things are significantly better. For one, you can spawn a thread with [`std::thread::spawn()`](https://doc.rust-lang.org/std/thread/fn.spawn.html) and have part of your application run on a dedicated thread. For example, a dedicated thread is a great way to handle Network and IO interfaces separately from the business logic of the app, an example of code written like this would be:
+```rust
+fn main() {
+  std::thread::spawn(|| {
+    // Code that is to be run on a separate thread
+  });
+
+  // Code to be run on the current(main) thread. e.g. loop {}
+}
+```
+
+It is to be noted that there should be code that continues to run in the main thread for the code spawned into thread to interact with the terminal, else the app just returns. Thus the difference between the following two code blocks is pretty big:
+```rust
+fn main() {
+    std::thread::spawn(|| {
+        for i in 1..100 {
+            println!("{}", i);
+        }
+    });
+}
+```
+The above code returns as soon as the thread is spawned and doesn't print to the terminal, whereas the following does print the numbers 1 through 99.
+```rust
+fn main() {
+    std::thread::spawn(|| {
+        for i in 1..100 {
+            println!("{}", i);
+        }
+    });
+    
+    loop {}
+}
+```
+
+Similarly, if you are constrained by the number of threads you can spawn(depending on the OS), an intelligent way to handle this problem is with [`tokio::task::spawn()`](https://docs.rs/tokio/1.12.0/tokio/task/fn.spawn.html) which has similar syntax, but supports async program scopes that are handled by the runtime(in this case tokio) and can be scheduled to run on the same thread or a different one by using the concept of **green-threads**. Hence when you write the following with `task`s instead of `thread`s, the difference is pretty easy to determine. This in code looks something like:
+```rust
+#[tokio::main]
+async fn main() {
+  tokio::task::spawn(async {
+    // Code that is to be handled by a concurrent task
+  });
+
+  // Rest of main()
+}
+```
+Since tasks are cheaper than full blown threads due to the lesser number of system calls made, they are better for a lot of things and hence are more often used as far as my code goes.
+
+A question that might have now made it's way into your mind right now would be: "If I have multiple threads/tasks handling various facets of my apps operations, how do I ensure that they are working in tandem and not cause chaos?", fret not, the answer I most frequently relate with is the humble channel. Channels are shared memory regions that are shared between multiple threads, one type of channel is the multi-producer-single-consumer [`std::sync::mpsc::channel`](https://doc.rust-lang.org/std/sync/mpsc/fn.channel.html) which allows for multiple producer thread/tasks to send data into a single consumer thread/task. The above mentioned function returns a tuple of `(Sender<T>, Receiver<T>)` where the receiver can be passed on to the consumer operation and the sender to the producer operations. An example where these could be used is as such:
+```rust
+fn main() {
+    let (tx, rx) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        for i in 1..100 {
+            tx.send(i);
+        }
+    });
+
+    while let Ok(i) = rx.recv() {
+        println!("{}", i);
+    }
+}
+```
+
+Another great feature of async code that I've come to use a lot is `select!`, an async construct that performs multiplexing of async tasks. It has been very helpful as far as writing concurrent, multi-threaded IO/Network heavy applications goes, a note to read about and understand this is [from the tokio tutorial](https://tokio.rs/tokio/tutorial/select). A great way to illustrate the use of `select!` is as follows:
+```rust
+use tokio::{select, sync::mpsc, task};
+
+#[tokio::main]
+async fn main() {
+    // Two channels are necessary to communicate with the two tasks.
+    let (tx_a, mut rx_a) = mpsc::channel(100);
+    let (tx_b, mut rx_b) = mpsc::channel(100);
+    task::spawn(async move {
+        for i in 1..50 {
+            tx_a.send(i).await;
+        }
+    });
+
+    task::spawn(async move {
+        for i in 50..100 {
+            tx_b.send(i).await;
+        }
+    });
+
+    loop {
+        select! {
+            Some(i) = rx_a.recv() => {
+                println!("{}", i);
+            }
+
+            Some(i) = rx_b.recv() => {
+                println!("{}", i);
+            }
+        }
+    }
+}
+```
 
 There's a lot more complex, but fun stuff that happens here, and a lot of this is abstracted away to make the experience a breeze for beginners, but it's still well worth the time to delve into the guts of this exciting coding paradigm. I for one, will be continuing to learn a lot, that's for sure, until the next one, farewell friends :D
