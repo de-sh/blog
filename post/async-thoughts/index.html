@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Construction Ahead, Hard Hats Required - dev.log | de-sh speaks about code...
+    </title>
+
+    <meta name="description"
+        content="As an undergrad, the last four years have been a journey of realization and final year was no less...">
+    <meta name="author" content="">
+
+    <link href="/blog/css/font.css" rel="stylesheet">
+    <link href="/blog/css/atom-one-dark.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400i,700,700i" rel="stylesheet">
+    <link href="/blog/css/style.css" rel="stylesheet">
+
+    <link rel="icon" href="/images/favicon.png">
+
+    <meta name="generator" content="Hugo 0.55.3" />
+
+    <link rel="alternate" type="application/atom+xml" href="/blog/index.xml" title="dev.log">
+
+</head>
+
+<body class="single">
+    <header class="header">
+
+        <h1 class="title"><a href="/blog/"><img src="/images/favicon.png" alt="blog"
+                    style="height:50px; margin-top:-10px"></a></h1>
+
+    </header>
+    <main class="main">
+        <div class="progress-bar" id="myBar"></div>
+        <article class="post post-view">
+            <header class="post-header">
+                <h1 class="post-title">Async with rust, a collection of learnings</h1>
+                <em>A collection of thoughts and links that I feel have had a disproportionate impact on my journey
+                    learning async-rust</em>
+                <p class="post-meta">October 15, 2021</p>
+            </header>
+            <div class="post-content">
+                <p>I wrote my first few lines of async rust at the end of 2020, that was the first time I was actually
+                    learning about the core principles behind async/await, while building a <a
+                        href="https://github.com/de-sh/kvdb/commit/30f428c5263f13f6ebc3b3303d636f0c3c178ee2">toy
+                        database</a>. Even though I have had prior experience writing code with similar keywords in
+                    javascript and python, they didn't make much sense then, it was just what I had to write to get
+                    through implementing something in code. Having been pulled into the async world while writing
+                    network facing code, I found it to be a learning that also transfered well into college as we were
+                    learning about similar stuff in a class on Programming Paradigmns.</p>
+                <p>The journey into
+                    async-rust started for me with some exposure through a well written <a
+                        href="https://tokio.rs/tokio/tutorial">tutorial on the tokio project's website</a>, which
+                    introduced the why in such a way that async/await totally made sense. This piece is a recollection
+                    of material that I've used to make sense of and interpret the crazy complex world of async/await
+                    over the past year or so. Anyways, if you are new and only getting started with rust and want to
+                    learn about the basics, I'd point you to <a href="https://www.youtube.com/watch?v=ThjvMReOXYM">this
+                        awesome screencast on YouTube by Jon Gjengset(@jonhoo)</a>, if you'd still like to read on and
+                    learn from my journey, it's my pleasure :D</p>
+                <p>Writing a lock and load mechanism for handling
+                    shared memory between threads was interesting, even more interesting was learning about how
+                    <code>lock()</code> in <code>std</code> differed from <code>lock()</code> in <code>tokio</code>. The
+                    way in which these two handled I/O also made for an interesting comparison. How all of tokio managed
+                    well with a <code>.await</code>, which until now had to be a <code>io::Result&lt;_&gt;</code> in
+                    std.
+                </p>
+                <p>To give a brief, async-rust code looks like this:</p>
+                <pre><code class="language-rust">
+async fn hello() -> String {
+    // Code that waits on some IO
+}
+
+fn main() {
+    let runtime = runtime_builder(); // Creates a runtime for async operations
+    print!("{}", runtime.on_block(async { hello().await})); // Calls the function from within built runtime and blocks main() till it returns
+}
+                </code></pre>
+                <p>What happens here is simple, we have an async function <code>hello()</code>
+                    running from within a runtime that blocks <code>main()</code>. Wait, so what's an async function and
+                    how is it different from the regular function? Well, they are similar in how they are written, but
+                    differ in that an async function starts with the keywords <code>async fn</code> unlike the normal
+                    <code>fn</code>, here <code>async</code> is syntactic sugar that translates down as depicted below:
+                </p>
+                <pre><code class="language-rust">
+async fn hello() -> String {
+    // Logic
+}
+                </code></pre>
+                <pre><code class="language-rust">
+fn hello() -> Future<Output = String> {
+    // Logic
+}
+                </code></pre>
+                <p>till the &quot;future&quot; returns, in which case the value is then
+                    printed to screen by <code>print!()</code>. There's a lot of thought that has gone into how
+                    async/await within runtimes is a lot better than callbacks that have to be handled manually(as was
+                    once the norm, <em>casually points to javascript's <code>.then()</code></em>), a debate I am not
+                    going to expand upon. Here's take where this problem is presented in a classic blog called <a
+                        href="https://journal.stuffwithstuff.com/2015/02/01/what-color-is-your-function/">&quot;What
+                        color is your function&quot;</a>, a well articulated read if I am to recommend one, in which
+                    async functions and regular functions are called colored functions that allow one to call the other,
+                    but not vice versa and how things evolved till it got here.</p>
+                <p>Another great feature of async
+                    code that I've come to use a lot is <code>select!</code>, an async construct that performs
+                    multiplexing of async tasks. It has been very helpful as far as writing concurrent, multi-threaded
+                    IO/Network heavy applications goes, a note to read about and understand this is one <a
+                        href="https://tokio.rs/tokio/tutorial/select">from the tokio tutorial</a>.</p>
+                <p>There's a lot
+                    more complex, but fun stuff that happens here, and a lot of this is abstracted away to make the
+                    experience a breeze for beginners, but it's still well worth the time to delve into the guts of this
+                    exciting coding paradigm. I for one, will be continuing to learn a lot, that's for sure, until the
+                    next one, farewell friends :D</p>
+            </div>
+            <footer class="post-footer">
+
+            </footer>
+        </article>
+    </main>
+    <footer class="footer">
+        <span>&copy; 2021 <a href="/" rel="noopener" target="_blank">Devdutt Shenoi</a>️</span>
+    </footer>
+    <script src="/blog/js/site.js"></script>
+</body>
+
+</html>
