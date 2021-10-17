@@ -132,7 +132,13 @@ fn main() {
     });
 }
                 </code></pre>
-                <p>The above code returns as soon as the thread is spawned and doesn't print
+                <p>Output is empty:</p>
+
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">
+$ ./run
+
+                </code></pre>
+                <p>As observed, above code returns as soon as the thread is spawned and doesn't print
                     to the terminal, whereas the following does print the numbers 1 through 99.</p>
 
                 <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
@@ -145,6 +151,17 @@ fn main() {
     
     loop {}
 }
+                </code></pre>
+                <p>Output contains numbers 1 through 99 in order and blocks the terminal
+                    afterwards, due to the <code>loop {}</code> statement:</p>
+
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">
+$ ./run
+1
+2
+3
+...
+99
                 </code></pre>
                 <p>Similarly, if you are constrained by the number of threads you can
                     spawn(depending on the OS), an intelligent way to handle this problem is with <a
@@ -192,12 +209,62 @@ fn main() {
     }
 }
                 </code></pre>
+                <p>Output contains 1 to 99 in order, just as the previous example, but here we
+                    are printing from <code>main()</code> instead of doing it from a spawned thread. There's a
+                    possibility that not all numbers will be printed, but the app returns after printing 99 for sure:
+                </p>
+
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">
+$ ./run
+1
+2
+3
+...
+99
+                </code></pre>
+                <p>Since multiple producers can exist, the code could also be:</p>
+
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
+fn main() {
+    // Two channels are necessary to communicate with the two tasks.
+    let (tx_a, rx_a) = std::sync::mpsc::channel();
+    let tx_b = tx_a.clone();
+    std::thread::spawn(move || {
+        for i in 1..50 {
+            tx_a.send(i);
+        }
+    });
+    
+    std::thread::spawn(move || {
+        for i in 50..100 {
+            tx_b.send(i);
+        }
+    });
+    
+    while let Ok(i) = rx_a.recv() {
+        println!(&quot;{}&quot;, i);
+    }
+}
+                </pre></code>
+                <p>Output contains numbers 1 to 49 and 50 to 99 in random order, depending on
+                    when they were sent onto the channel, depicting the concurrent nature of processes running on
+                    threads:</p>
+
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">
+$ ./run
+50
+1
+2
+51
+3
+...
+                </code></pre>
                 <p>Another great feature of async code that I've come to use a lot is
                     <code>select!</code>, an async construct that performs multiplexing of async tasks. It has been very
                     helpful as far as writing concurrent, multi-threaded IO/Network heavy applications goes, a note to
                     read about and understand this is <a href="https://tokio.rs/tokio/tutorial/select">from the tokio
-                        tutorial</a>. A great way to illustrate the use of <code>select!</code> is as follows:
-                </p>
+                        tutorial</a>. A great way to illustrate the use of <code>select!</code> is by making the
+                    following changes to the last example:
 
                 <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
 use tokio::{select, sync::mpsc, task};
@@ -233,12 +300,24 @@ async fn main() {
     }
 }
                 </code></pre>
+                <p>Output is similar to the previous example and contains numbers 1 to 49 and
+                    50 to 99 in random order, depending on when they were sent onto the channel, depicting the
+                    concurrent nature of processes running in the tokio tasks:</p>
 
-                <p>There's a lot
-                    more complex, but fun stuff that happens here, and a lot of this is abstracted away to make the
-                    experience a breeze for beginners, but it's still well worth the time to delve into the guts of this
-                    exciting coding paradigm. I for one, will be continuing to learn a lot, that's for sure, until the
-                    next one, farewell friends :D</p>
+                    <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">
+$ ./run
+1
+2
+3
+50           
+51
+52
+...
+                </code></pre>
+                <p>There's a lot more complex, but fun stuff that happens here, and a lot of this is abstracted away to
+                    make the experience a breeze for beginners, but it's still well worth the time to delve into the
+                    guts of this exciting coding paradigm. I for one, will be continuing to learn a lot, that's for
+                    sure, until the next one, farewell friends :D</p>
             </div>
             <footer class="post-footer">
 

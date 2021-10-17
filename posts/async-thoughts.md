@@ -58,7 +58,12 @@ fn main() {
     });
 }
 ```
-The above code returns as soon as the thread is spawned and doesn't print to the terminal, whereas the following does print the numbers 1 through 99.
+Output is empty:
+```bash
+$ ./run
+
+```
+As observed, above code returns as soon as the thread is spawned and doesn't print to the terminal, whereas the following does print the numbers 1 through 99.
 ```rust
 fn main() {
     std::thread::spawn(|| {
@@ -69,6 +74,15 @@ fn main() {
     
     loop {}
 }
+```
+Output contains numbers 1 through 99 in order and blocks the terminal afterwards, due to the `loop {}` statement:
+```bash
+$ ./run
+1
+2
+3
+...
+99
 ```
 
 Similarly, if you are constrained by the number of threads you can spawn(depending on the OS), an intelligent way to handle this problem is with [`tokio::task::spawn()`](https://docs.rs/tokio/1.12.0/tokio/task/fn.spawn.html) which has similar syntax, but supports async program scopes that are handled by the runtime(in this case tokio) and can be scheduled to run on the same thread or a different one by using the concept of **green-threads**. Hence when you write the following with `task`s instead of `thread`s, the difference is pretty easy to determine. This in code looks something like:
@@ -99,8 +113,50 @@ fn main() {
     }
 }
 ```
+Output contains 1 to 99 in order, just as the previous example, but here we are printing from `main()` instead of doing it from a spawned thread. There's a possibility that not all numbers will be printed, but the app returns after printing 99 for sure:
+```bash
+$ ./run
+1
+2
+3
+...
+99
+```
+Since multiple producers can exist, the code could also be:
+```rust
+fn main() {
+    // Two channels are necessary to communicate with the two tasks.
+    let (tx_a, rx_a) = std::sync::mpsc::channel();
+    let tx_b = tx_a.clone();
+    std::thread::spawn(move || {
+        for i in 1..50 {
+            tx_a.send(i);
+        }
+    });
 
-Another great feature of async code that I've come to use a lot is `select!`, an async construct that performs multiplexing of async tasks. It has been very helpful as far as writing concurrent, multi-threaded IO/Network heavy applications goes, a note to read about and understand this is [from the tokio tutorial](https://tokio.rs/tokio/tutorial/select). A great way to illustrate the use of `select!` is as follows:
+    std::thread::spawn(move || {
+        for i in 50..100 {
+            tx_b.send(i);
+        }
+    });
+
+    while let Ok(i) = rx_a.recv() {
+        println!("{}", i);
+    }
+}
+```
+Output contains numbers 1 to 49 and 50 to 99 in random order, depending on when they were sent onto the channel, depicting the concurrent nature of processes running on threads:
+```bash
+$ ./run
+50
+1
+2
+51
+3
+...
+```
+
+Another great feature of async code that I've come to use a lot is `select!`, an async construct that performs multiplexing of async tasks. It has been very helpful as far as writing concurrent, multi-threaded IO/Network heavy applications goes, a note to read about and understand this is [from the tokio tutorial](https://tokio.rs/tokio/tutorial/select). A great way to illustrate the use of `select!` is by making the following changes to the last example:
 ```rust
 use tokio::{select, sync::mpsc, task};
 
@@ -133,6 +189,17 @@ async fn main() {
         }
     }
 }
+```
+Output is similar to the previous example and contains numbers 1 to 49 and 50 to 99 in random order, depending on when they were sent onto the channel, depicting the concurrent nature of processes running in the tokio tasks:
+```bash
+$ ./run
+1
+2
+3
+50
+51
+52
+...
 ```
 
 There's a lot more complex, but fun stuff that happens here, and a lot of this is abstracted away to make the experience a breeze for beginners, but it's still well worth the time to delve into the guts of this exciting coding paradigm. I for one, will be continuing to learn a lot, that's for sure, until the next one, farewell friends :D
