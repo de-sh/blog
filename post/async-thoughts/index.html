@@ -114,10 +114,10 @@ fn hello() -> Future&lt;Output = String&gt; {
                 <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust">
 fn main() {
     std::thread::spawn(|| {
-        // Code that is to be run on a separate thread</code></pre>
-                });
-                // Code to be run on the current(main) thread. e.g. loop {}
-                }
+        // Code that is to be run on a separate thread
+    });
+    // Code to be run on the current(main) thread. e.g. loop {}
+}
                 </code></pre>
                 <p>It is to be noted that there should be code that continues to run in the
                     main thread for the code spawned into thread to interact with the terminal, else the app just
@@ -304,7 +304,7 @@ async fn main() {
                     50 to 99 in random order, depending on when they were sent onto the channel, depicting the
                     concurrent nature of processes running in the tokio tasks:</p>
 
-                    <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">
+                <pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">
 $ ./run
 1
 2
