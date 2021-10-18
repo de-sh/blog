@@ -98,6 +98,8 @@ async fn main() {
 ```
 Since tasks are cheaper than full blown threads due to the lesser number of system calls made, they are better for a lot of things and hence are more often used as far as my code goes.
 
+>    **NOTE:** Threads are managed by the OS and in Linux they are preemptable. This is different from how tokio does things with a non-preemptive/cooperative approach. An example situation where this might become a problem is when 8 forever running tasks are dispatched to run within a runtime that has only 4 threads allotted to it, 4 of these tasks will never start execution given the cooperative nature by which tokio handles them.
+
 A question that might have now made it's way into your mind right now would be: "If I have multiple threads/tasks handling various facets of my apps operations, how do I ensure that they are working in tandem and not cause chaos?", fret not, the answer I most frequently relate with is the humble channel. Channels are shared memory regions that are shared between multiple threads, one type of channel is the multi-producer-single-consumer [`std::sync::mpsc::channel`](https://doc.rust-lang.org/std/sync/mpsc/fn.channel.html) which allows for multiple producer thread/tasks to send data into a single consumer thread/task. The above mentioned function returns a tuple of `(Sender<T>, Receiver<T>)` where the receiver can be passed on to the consumer operation and the sender to the producer operations. An example where these could be used is as such:
 ```rust
 fn main() {
@@ -203,3 +205,5 @@ $ ./run
 ```
 
 There's a lot more complex, but fun stuff that happens here, and a lot of this is abstracted away to make the experience a breeze for beginners, but it's still well worth the time to delve into the guts of this exciting coding paradigm. I for one, will be continuing to learn a lot, that's for sure, until the next one, farewell friends :D
+
+**Edited 18th October:** Added a note to differentitate between thread and tokio tasks on the basis of preemption as pointed out to me by [Ravi(@tekjar)](https://github.com/tekjar).
